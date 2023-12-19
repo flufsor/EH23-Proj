@@ -9,17 +9,20 @@ from .Scan import Scan
 
 class DomainScanner(Scan):
     def __init__(self, target: str):
-        super().__init__(target)
+        self.target = target
 
     def scan(self) -> dict:
         subdomains_and_records = self._brute_force_and_scan_subdomains()
         scan_results = {
-            "domain": self.target,
             "dns_records": subdomains_and_records,
         }
+
+        self._remove_empty_arrays(scan_results["dns_records"])
+
         return scan_results
 
-    def get_name(self) -> str:
+    @staticmethod
+    def get_name() -> str:
         return "Domain Name Scanner"
 
     def _get_dns_records(self, target: str, record_type: str) -> list:
@@ -46,7 +49,6 @@ class DomainScanner(Scan):
             print(f"Error: File not found: {Config.domainname_list}")
             sys.exit(1)
 
-        subdomains_to_bruteforce = ["www", "mail", "admin"]
         subdomains_and_records = {
             "@": {
                 record_type: self._get_dns_records(self.target, record_type)
@@ -57,6 +59,8 @@ class DomainScanner(Scan):
         for subdomain in subdomains_to_bruteforce:
             full_domain = f"{subdomain}.{self.target}"
             try:
+                dns.resolver.resolve(full_domain, "A")
+
                 subdomains_and_records[full_domain] = {
                     record_type: self._get_dns_records(full_domain, record_type)
                     for record_type in ["A", "AAAA", "MX", "TXT"]
@@ -65,3 +69,12 @@ class DomainScanner(Scan):
                 pass
 
         return subdomains_and_records
+
+    def _remove_empty_arrays(self, data):
+        for key, value in list(data.items()):
+            if isinstance(value, dict):
+                self._remove_empty_arrays(value)
+            elif isinstance(value, list) and not value:
+                del data[key]
+
+        return data

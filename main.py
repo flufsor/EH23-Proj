@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 import argparse
 import json
-from ctypes.wintypes import tagRECT
 
 from config import Config
 from scans import DomainScanner, PortScanner

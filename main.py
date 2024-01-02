@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 import argparse
 import json
+from datetime import datetime
+from typing import Dict
 
 from config import Config
 from scans import DomainScanner, PortScanner
@@ -8,28 +10,60 @@ from scans import DomainScanner, PortScanner
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Cybersecurity scanning CLI tool")
-    parser.add_argument("target", help="Target domain to scan")
+    parser.add_argument("domain", help="Domain to scan")
     parser.add_argument("output", help="Output JSON file path")
     return parser.parse_args()
+
+
+def get_ips_from_domain_records(domain_records: Dict[str, Dict[str, str]]) -> list:
+    if domain_records is None:
+        return []
+
+    unique_ips = set()
+    for records in domain_records.values():
+        for record_type, ip_list in records.items():
+            if record_type in {"A", "AAAA"}:
+                unique_ips.update(ip_list)
+    return list(unique_ips)
 
 
 if __name__ == "__main__":
     config = Config()
     args = parse_args()
 
-    sub_targets = []
-
     scans = {}
-    scan_results = {}
+    domain_records = {}
+    targets = {}
 
-    for scanner in [DomainScanner, PortScanner]:
-        scans[scanner.get_name()] = scanner(args.target)
+    # Run DomainScanner first so that we can use the found subdomains and IPs it finds in the other scanners
+    print("Running Domain Scanner...")
+    domain_records = DomainScanner.scan(args.domain)
 
-    for scanner in scans.values():
-        print(f"Running {scanner.get_name()}...")
-        scan_results[scanner.get_name()] = scanner.scan()
+    targets = {value: {} for value in get_ips_from_domain_records(domain_records)}
 
+    print(f"Found {len(targets)} IP addresses for {args.domain}")
+
+    # Run other scanners
+    target_counter = 1
+    for target in targets:
+        print(f"Scanning IP {target_counter}/{len(targets)}")
+        targets[target]["ports"] = PortScanner.scan(target)
+
+        target_counter += 1
+
+    # Write results to JSON file
     with open(args.output, "w") as json_file:
-        json.dump({"target": args.target, "results": scan_results}, json_file, indent=2)
+        json.dump(
+            {
+                "target": args.domain,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "domain_info": {
+                    "domain_records": domain_records,
+                },
+                "hosts": targets,
+            },
+            json_file,
+            indent=2,
+        )
 
-    print(f"Scan results written to {args.output}")
+    print(f"\nScan results written to {args.output}")

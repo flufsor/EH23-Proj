@@ -1,14 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Protocol
 
 
 class Scan(Protocol):
     @abstractmethod
-    def __init__(self, target: str):
-        pass
-
-    @abstractmethod
-    def scan(self) -> dict:
+    def scan(target: str) -> dict:
         pass
 
     @abstractmethod

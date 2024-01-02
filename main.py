@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict
 
 from config import Config
-from scans import DomainScanner, PortScanner
+from scans import *
 
 
 def parse_args():
@@ -47,6 +47,8 @@ if __name__ == "__main__":
     target_counter = 1
     for target in targets:
         print(f"Scanning IP {target_counter}/{len(targets)}")
+        targets[target]["asn"] = ASNScanner.scan(target)
+        targets[target]["geoip"] = GeoIPScanner.scan(target)
         targets[target]["ports"] = PortScanner.scan(target)
 
         target_counter += 1

@@ -1,5 +1,5 @@
 # Script Ideas
-- [ ] Nmap scanning
+- [x] Nmap scanning
 - [x] Domain enumeration
 	- [x] A
 	- [x] AAAA

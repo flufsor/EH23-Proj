@@ -2,6 +2,7 @@
 import argparse
 import json
 from datetime import datetime
+from tabnanny import check
 from typing import Dict
 
 from config import Config
@@ -16,6 +17,7 @@ def parse_args():
 
 
 def get_ips_from_domain_records(domain_records: Dict[str, Dict[str, str]]) -> list:
+    """Returns a list of unique IP addresses from the given domain records"""
     if domain_records is None:
         return []
 
@@ -27,11 +29,24 @@ def get_ips_from_domain_records(domain_records: Dict[str, Dict[str, str]]) -> li
     return list(unique_ips)
 
 
+def check_ports_for_service(target: dict, services: list[str]) -> list[int] | None:
+    """Returns a list of ports that have the given services running on them or None if no ports are found"""
+    ports = []
+
+    print(target["ports"])
+
+    for port in target.get("ports", []):
+        service = target["ports"][port]["product"].lower()
+        if service and service in services:
+            ports.append(port)
+
+    return ports if ports else None
+
+
 if __name__ == "__main__":
     config = Config()
     args = parse_args()
 
-    scans = {}
     domain_records = {}
     targets = {}
 
@@ -47,9 +62,27 @@ if __name__ == "__main__":
     target_counter = 1
     for target in targets:
         print(f"Scanning IP {target_counter}/{len(targets)}")
-        targets[target]["asn"] = ASNScanner.scan(target)
-        targets[target]["geoip"] = GeoIPScanner.scan(target)
-        targets[target]["ports"] = PortScanner.scan(target)
+        if Config.enable_asn:
+            targets[target]["asn"] = ASNScanner.scan(target)
+        if Config.enable_geoip:
+            targets[target]["geoip"] = GeoIPScanner.scan(target)
+
+        portscan_results = PortScanner.scan(target)
+        for scanresult_key, scanresult_value in portscan_results.items():
+            targets[target][scanresult_key] = scanresult_value
+
+        # Check for ssh servers and scan them
+        ports = check_ports_for_service(targets[target], Config.ssh_server_identifiers)
+        if ports is not None:
+            ssh_servers = {}
+            for port in ports:
+                ssh_servers[port] = SshScanner.scan(target, port)
+
+            print("SSH Servers: ", ssh_servers)
+
+            if len(ssh_servers) > 0:
+                for ssh_key, ssh_value in ssh_servers.items():
+                    targets[target]["ports"][ssh_key]["weak_ciphers"] = ssh_value
 
         target_counter += 1
 
@@ -62,7 +95,7 @@ if __name__ == "__main__":
                 "domain_info": {
                     "domain_records": domain_records,
                 },
-                "hosts": targets,
+                "ips": targets,
             },
             json_file,
             indent=2,

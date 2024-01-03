@@ -6,13 +6,15 @@
 	- [x] MX
 	- [x] TXT
 - [ ] Cloud services enumeration using DNS
-- [ ] Geoip lookup
+- [x] Geoip lookup
+- [x] ASN lookup
 - [ ] DNSSEC checking
 - [ ] Shodan checking
 - [ ] LeakIX checking
 - [ ] SSL assessment
-- [ ] SSH assessment
-- [ ] WIFI Scanning
-	- [ ] Access Points List
-	- [ ] WEP/WPA/Open
-	- [ ] Protected Management Frames
+- [x] SSH assessment
+- [ ] Webserver Header checks
+	- [ ] HSTS
+	- [ ] Content-security-policy
+	- [ ] X-Forwarder-Policy
+- [ ] Cookie checker (are they being set without consent)

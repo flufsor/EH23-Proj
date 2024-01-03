@@ -1,13 +1,14 @@
+import functools
 import sys
 
 import dns.resolver
+
+from config import Config
 
 from .Scan import Scan
 
 
 class DomainScanner(Scan):
-    domainname_list = "small.txt"
-
     @staticmethod
     def scan(target: str) -> dict:
         def get_dns_records(target: str, record_type: str) -> list:
@@ -29,13 +30,6 @@ class DomainScanner(Scan):
                 return ["Domain not found"]
 
         def brute_force_and_scan_subdomains(target) -> dict:
-            try:
-                with open(DomainScanner.domainname_list, "r") as domainname_list_file:
-                    subdomains_to_bruteforce = domainname_list_file.read().splitlines()
-            except FileNotFoundError:
-                print(f"Error: File not found: {DomainScanner.domainname_list}")
-                sys.exit(1)
-
             results = {
                 target: {
                     record_type: get_dns_records(target, record_type)
@@ -43,7 +37,7 @@ class DomainScanner(Scan):
                 }
             }
 
-            for subdomain in subdomains_to_bruteforce:
+            for subdomain in DomainScanner.subdomain_name_list():
                 full_domain = f"{subdomain}.{target}"
                 try:
                     dns.resolver.resolve(full_domain, "A")
@@ -74,5 +68,14 @@ class DomainScanner(Scan):
         return "Domain Name Scanner"
 
     @staticmethod
-    def set_domainname_list(file_path: str):
-        DomainScanner.domainname_list = file_path
+    @functools.lru_cache(maxsize=None)  # Cache the results of this function
+    def subdomain_name_list():
+        domain_list = []
+        try:
+            with open(Config.domainname_list, "r") as f:
+                domain_list = f.read().splitlines()
+        except FileNotFoundError:
+            print(f"Error: File not found: {Config.domainname_list}")
+            sys.exit(1)
+
+        return domain_list

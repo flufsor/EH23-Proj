@@ -1,4 +1,4 @@
-from .ASNScanner import ASNScanner
+from .ASScanner import ASScanner
 from .DnsSecScanner import DnsSecScanner
 from .DomainScanner import DomainScanner
 from .GeoIPScanner import GeoIPScanner

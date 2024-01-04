@@ -18,7 +18,6 @@ class GeoIPScanner(Scan):
                 result["city"] = response.city.name if response.city.name else ""
 
         except Exception as e:
-            print(f"An error occurred during GeoIP scanning: {e}")
-            pass
+            return result
 
         return result

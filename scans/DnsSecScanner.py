@@ -2,6 +2,7 @@ import dns.dnssec
 import dns.message
 import dns.name
 import dns.query
+import dns.rcode
 import dns.rdatatype
 import dns.resolver
 
@@ -24,7 +25,7 @@ class DnsSecScanner(Scan):
             # Resolve the nameservers and their addresses
             ns_response = resolver.resolve(target, dns.rdatatype.NS)
             if ns_response.rrset:
-                nsname = ns_response.rrset[0].to_text()  # Access the first element of the list
+                nsname = ns_response.rrset[0].to_text()
                 ns_response = resolver.resolve(nsname, dns.rdatatype.A)
             if ns_response.rrset:
                 nsaddr = ns_response.rrset[0].to_text()

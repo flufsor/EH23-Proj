@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import argparse
+import enum
 import json
 from datetime import datetime
 from typing import Dict
@@ -33,9 +34,6 @@ def print_banner(console: Console):
     horizontal_center = (console.width - max(len(line) for line in logo.splitlines())) // 2
 
     print(Panel.fit(logo, width=console.width, style="bold green"))
-    print("Configuration:")
-    print(Padding(f"Target: [bold cyan]{args.domain}[/bold cyan]", (0, 4)))
-    print(Padding(f"Output: [bold cyan]{args.output}[/bold cyan]", (0, 4)))
 
 
 def get_ips_from_domain_records(domain_records: Dict[str, Dict[str, str]]) -> list:
@@ -55,8 +53,6 @@ def check_ports_for_service(target: dict, services: list[str]) -> list[int] | No
     """Returns a list of ports that have the given services running on them or None if no ports are found"""
     ports = []
 
-    print(target["ports"])
-
     for port in target.get("ports", []):
         service = target["ports"][port]["product"].lower()
         if service and service in services:
@@ -70,37 +66,64 @@ if __name__ == "__main__":
     config = Config()
     args = parse_args()
 
-    if args.banner:
-        print_banner(console)
-        exit(0)
-
     domain_records = {}
     targets = {}
 
+    print_banner(console)
+
+    print("Configuration:")
+    print(Padding(f"Target: [cyan]{args.domain}[/cyan]", (0, 4)))
+    print(Padding(f"Output: [cyan]{args.output}[/cyan]", (0, 4)))
+    print()
+
     # Run DomainScans first so that we can use the found subdomains and IPs it finds in the other scanners
-    print("\n[yellow]Running Domain Scanner...[/yellow]")
     domain_records = DomainScanner.scan(args.domain)
 
     targets = {value: {} for value in get_ips_from_domain_records(domain_records)}
-
-    print(f"Found [bold green]{len(targets)}[/bold green] IP addresses for {args.domain}")
+    print(f"Domain info:")
+    print(Padding(f"Found [cyan]{len(targets)}[/cyan] IP addresses for [cyan]{args.domain}[/cyan]", (0, 4)))
 
     # Run DNSSEC scanner
-    print("\n[yellow]Running DNSSEC Scanner...[/yellow]")
     dns_sec = DnsSecScanner.scan(args.domain)["dnssec"]
+    if dns_sec:
+        print(Padding(f"DNSSEC: [green]{dns_sec}[/green]", (0, 4)))
+    else:
+        print(Padding(f"DNSSEC: [red]{dns_sec}[/red]", (0, 4)))
+
+    # Print domain records
+    print(Padding("Subdomains:", (0, 4)))
+    for subdomain, records in domain_records.items():
+        print(Padding(f"- [cyan]{subdomain}[/cyan]", (0, 8)))
+    print()
 
     # Run other scanners
-    target_counter = 1
-    for target in targets:
-        print(f"Scanning IP {target_counter}/{len(targets)}")
-        if Config.enable_asn:
-            targets[target]["asn"] = ASNScanner.scan(target)
-        if Config.enable_geoip:
+    for index, target in enumerate(targets):
+        print(f"Scanning IP {index+1}/{len(targets)}: {target}")
+
+        if Config.geoip_asn_path != "":
+            targets[target]["network_info"] = ASScanner.scan(target)
+            print(Padding(f"Network Info:", (0, 4)))
+            print(Padding(f"AS: [cyan]{targets[target]['network_info']["AS"]}[/cyan]", (0, 8)))
+            print(Padding(f"Organization: [cyan]{targets[target]['network_info']["organization"]}[/cyan]", (0, 8)))
+            print(Padding(f"Network: [cyan]{targets[target]['network_info']["network"]}[/cyan]", (0, 8)))
+        else:
+            print(Padding("ASN: [yellow]Skipped[/yellow]", (0, 4)))
+
+        if Config.geoip_city_path != "":
             targets[target]["geoip"] = GeoIPScanner.scan(target)
+            print(Padding(f"GeoIP:", (0, 4)))
+            print(Padding(f"Country: [cyan]{targets[target]['geoip']['country']}[/cyan]", (0, 8)))
+            print(Padding(f"City: [cyan]{targets[target]['geoip']['city']}[/cyan]", (0, 8)))
+
+        else:
+            print(Padding("GeoIP: [yellow]Skipped[/yellow]", (0, 4)))
 
         portscan_results = PortScanner.scan(target)
         for scanresult_key, scanresult_value in portscan_results.items():
             targets[target][scanresult_key] = scanresult_value
+        print(Padding(f"Open Ports:", (0, 4)))
+        for port in targets[target]["ports"]:
+            print(Padding(f"- [bold yellow]{port}, {targets[target]["ports"][port]['product']} {targets[target]["ports"][port]['version']}[/bold yellow]", (0, 8)))
 
         # Check for ssh servers and scan them
         ports = check_ports_for_service(targets[target], Config.ssh_server_identifiers)
@@ -110,10 +133,27 @@ if __name__ == "__main__":
                 ssh_servers[port] = SshScanner.scan(target, port)
 
             if len(ssh_servers) > 0:
+                print(Padding(f"SSH Servers:", (0, 4)))
                 for ssh_key, ssh_value in ssh_servers.items():
                     targets[target]["ports"][ssh_key]["weak_ciphers"] = ssh_value
+                    print(Padding(f"- Port: [bold yellow]{ssh_key}[/bold yellow]", (0, 8)))
 
-        target_counter += 1
+                    # Check for weak ciphers
+                    for cipher_type in targets[target]["ports"][ssh_key]["weak_ciphers"]:
+                        if len(cipher_type) > 0:
+                            weak_ciphers = True
+                            break
+                    else:
+                        weak_ciphers = False
+                    
+                    if weak_ciphers:
+                        print(Padding(f"- [bold red]Found weak ciphers:[/bold red]", (0, 8)))
+                        for cipher_type in targets[target]["ports"][ssh_key]["weak_ciphers"]:
+                            print(Padding(f"- {cipher_type}", (0, 12)))
+                            for cipher in targets[target]["ports"][ssh_key]["weak_ciphers"][cipher_type]:
+                                print(Padding(f"- [bold red]{cipher}[/bold red]", (0, 16)))
+
+        print()
 
     # Write results to JSON file
     with open(args.output, "w") as json_file:
@@ -131,4 +171,4 @@ if __name__ == "__main__":
             indent=2,
         )
 
-    pprint(f"\nScan results written to {args.output}")
+    print(f'\nScan results written to "[green]{args.output}[/green]"')

@@ -20,10 +20,12 @@ class DomainScanner(Scan):
                     records = [record.strip('"') for record in records]
 
                 return records
+
             except dns.resolver.NoAnswer:
                 return []
             except dns.resolver.NXDOMAIN:
-                return ["Domain not found"]
+                print(f"Error: {target} does not exist")
+                sys.exit(1)
 
         def brute_force_and_scan_subdomains(target) -> dict:
             results = {
@@ -67,6 +69,10 @@ class DomainScanner(Scan):
                 domain_list = f.read().splitlines()
         except FileNotFoundError:
             print(f"Error: File not found: {Config.domainname_list}")
+            sys.exit(1)
+
+        except Exception as e:
+            print(f"Error: {e}")
             sys.exit(1)
 
         return domain_list

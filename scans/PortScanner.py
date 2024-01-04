@@ -14,7 +14,7 @@ class PortScanner(Scan):
             nm = nmap.PortScanner()
             scan_results = nm.scan(hosts=target, ports=str(Config.portrange), arguments="-sV")
 
-            for host, result in scan_results.get("scan", {}).items():
+            for _, result in scan_results.get("scan", {}).items():
                 for hostname in result.get("hostnames", []):
                     if hostname.get("type") == "PTR":
                         portscan_result["rdns"] = hostname.get("name", "")
@@ -28,7 +28,7 @@ class PortScanner(Scan):
                             "version": port_info.get("version", "unknown"),
                         }
 
-        except nmap.PortScannerError as e:
-            print(f"An error occurred during port scanning: {e}")
+        except Exception as e:
+            return {}
 
         return portscan_result

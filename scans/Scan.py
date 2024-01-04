@@ -1,8 +1,7 @@
-from abc import abstractmethod
 from typing import Protocol
 
 
 class Scan(Protocol):
-    @abstractmethod
+    @staticmethod
     def scan(target: str) -> dict:
-        pass
+        return {}

@@ -1,10 +1,8 @@
 class Config:
     domainname_list = "small.txt"
     portrange = "22,80,113,443,444"
-    enable_geoip = True
-    enable_asn = True
-    geoip_city_path = "GeoLite2-City.mmdb"
-    geoip_asn_path = "GeoLite2-ASN.mmdb"
+    geoip_city_path = "GeoLite2-City.mmdb"  # Set empty string to disable GeoIP
+    geoip_asn_path = "GeoLite2-ASN.mmdb"  # Set empty string to disable GeoIP
 
     ssh_server_identifiers = [  # Identifiers used to identify a SSH server
         "ssh",

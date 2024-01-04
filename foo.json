@@ -1,0 +1,74 @@
+{
+  "target": "ba.be",
+  "timestamp": "2024-01-04 15:41:56",
+  "domain_info": {
+    "dnssec": false,
+    "domain_records": {
+      "ba.be": {
+        "A": [
+          "135.181.198.70"
+        ],
+        "MX": [
+          "1 aspmx.l.google.com.",
+          "10 alt3.aspmx.l.google.com.",
+          "5 alt1.aspmx.l.google.com.",
+          "5 alt2.aspmx.l.google.com.",
+          "10 alt4.aspmx.l.google.com."
+        ],
+        "TXT": [
+          "v=spf1  include:_spf.google.com include:servers.mcsv.net mx ip4:194.0.234.0/24 ip4:116.203.18.22 ip4:91.183.52.232 ip4:159.69.80.253 ~all",
+          "MS=FF79411658AAE58F4751F21494BCCA349379FCE4"
+        ]
+      },
+      "www.ba.be": {
+        "A": [
+          "135.181.198.70"
+        ]
+      }
+    }
+  },
+  "ips": {
+    "135.181.198.70": {
+      "network_info": {
+        "AS": "AS24940",
+        "organization": "Hetzner Online GmbH",
+        "network": "135.181.0.0/16"
+      },
+      "geoip": {
+        "country": "Finland",
+        "city": "Helsinki"
+      },
+      "rdns": "static.70.198.181.135.clients.your-server.de",
+      "ports": {
+        "22": {
+          "product": "OpenSSH",
+          "version": "8.0",
+          "weak_ciphers": {
+            "kex_algorithms": [
+              "diffie-hellman-group-exchange-sha1",
+              "diffie-hellman-group14-sha1"
+            ],
+            "server_host_key_algorithms": [
+              "ssh-rsa"
+            ],
+            "encryption_algorithms": [
+              "aes256-cbc",
+              "aes128-cbc"
+            ],
+            "mac_algorithms": [
+              "hmac-sha1"
+            ]
+          }
+        },
+        "80": {
+          "product": "nginx",
+          "version": "1.18.0"
+        },
+        "443": {
+          "product": "nginx",
+          "version": "1.18.0"
+        }
+      }
+    }
+  }
+}

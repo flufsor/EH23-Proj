@@ -9,8 +9,6 @@
 - [x] Geoip lookup
 - [x] ASN lookup
 - [ ] DNSSEC checking
-- [ ] Shodan checking
-- [ ] LeakIX checking
 - [ ] SSL assessment
 - [x] SSH assessment
 - [ ] Webserver Header checks

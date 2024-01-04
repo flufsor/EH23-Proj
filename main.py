@@ -2,8 +2,12 @@
 import argparse
 import json
 from datetime import datetime
-from tabnanny import check
 from typing import Dict
+
+from rich import print
+from rich.console import Console
+from rich.padding import Padding
+from rich.panel import Panel
 
 from config import Config
 from scans import *
@@ -13,7 +17,25 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Cybersecurity scanning CLI tool")
     parser.add_argument("domain", help="Domain to scan")
     parser.add_argument("output", help="Output JSON file path")
+    parser.add_argument("--banner", action="store_true", help="Print the welcome banner")
     return parser.parse_args()
+
+
+def print_banner(console: Console):
+    logo = r"""
+                _________                                       
+    ______ ___.__.\_   ___ \  _______  __ ___________ ___.__.   
+    \____ <   |  |/    \  \/ /  _ \  \/ // __ \_  __ <   |  |   
+    |  |_> >___  |\     \___(  <_> )   /\  ___/|  | \/\___  |   
+    |   __// ____| \______  /\____/ \_/  \___  >__|   / ____|   
+    |__|   \/             \/                 \/       \/        
+    """
+    horizontal_center = (console.width - max(len(line) for line in logo.splitlines())) // 2
+
+    print(Panel.fit(logo, width=console.width, style="bold green"))
+    print("Configuration:")
+    print(Padding(f"Target: [bold cyan]{args.domain}[/bold cyan]", (0, 4)))
+    print(Padding(f"Output: [bold cyan]{args.output}[/bold cyan]", (0, 4)))
 
 
 def get_ips_from_domain_records(domain_records: Dict[str, Dict[str, str]]) -> list:
@@ -44,19 +66,28 @@ def check_ports_for_service(target: dict, services: list[str]) -> list[int] | No
 
 
 if __name__ == "__main__":
+    console = Console()
     config = Config()
     args = parse_args()
+
+    if args.banner:
+        print_banner(console)
+        exit(0)
 
     domain_records = {}
     targets = {}
 
-    # Run DomainScanner first so that we can use the found subdomains and IPs it finds in the other scanners
-    print("Running Domain Scanner...")
+    # Run DomainScans first so that we can use the found subdomains and IPs it finds in the other scanners
+    print("\n[yellow]Running Domain Scanner...[/yellow]")
     domain_records = DomainScanner.scan(args.domain)
 
     targets = {value: {} for value in get_ips_from_domain_records(domain_records)}
 
-    print(f"Found {len(targets)} IP addresses for {args.domain}")
+    print(f"Found [bold green]{len(targets)}[/bold green] IP addresses for {args.domain}")
+
+    # Run DNSSEC scanner
+    print("\n[yellow]Running DNSSEC Scanner...[/yellow]")
+    dns_sec = DnsSecScanner.scan(args.domain)["dnssec"]
 
     # Run other scanners
     target_counter = 1
@@ -78,8 +109,6 @@ if __name__ == "__main__":
             for port in ports:
                 ssh_servers[port] = SshScanner.scan(target, port)
 
-            print("SSH Servers: ", ssh_servers)
-
             if len(ssh_servers) > 0:
                 for ssh_key, ssh_value in ssh_servers.items():
                     targets[target]["ports"][ssh_key]["weak_ciphers"] = ssh_value
@@ -93,6 +122,7 @@ if __name__ == "__main__":
                 "target": args.domain,
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "domain_info": {
+                    "dnssec": dns_sec,
                     "domain_records": domain_records,
                 },
                 "ips": targets,
@@ -101,4 +131,4 @@ if __name__ == "__main__":
             indent=2,
         )
 
-    print(f"\nScan results written to {args.output}")
+    pprint(f"\nScan results written to {args.output}")

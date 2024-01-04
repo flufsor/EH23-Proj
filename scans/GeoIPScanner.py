@@ -14,9 +14,7 @@ class GeoIPScanner(Scan):
             with geoip2.database.Reader(Config.geoip_city_path) as reader:
                 response = reader.city(target)
 
-                result["country"] = (
-                    response.country.name if response.country.name else ""
-                )
+                result["country"] = response.country.name if response.country.name else ""
                 result["city"] = response.city.name if response.city.name else ""
 
         except Exception as e:
@@ -24,7 +22,3 @@ class GeoIPScanner(Scan):
             pass
 
         return result
-
-    @staticmethod
-    def get_name() -> str:
-        return "GeoIP Scanner"

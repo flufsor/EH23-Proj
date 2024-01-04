@@ -32,7 +32,3 @@ class PortScanner(Scan):
             print(f"An error occurred during port scanning: {e}")
 
         return portscan_result
-
-    @staticmethod
-    def get_name() -> str:
-        return "Port Scanner"

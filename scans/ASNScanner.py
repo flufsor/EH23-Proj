@@ -14,16 +14,10 @@ class ASNScanner(Scan):
             with geoip2.database.Reader(Config.geoip_asn_path) as reader:
                 response = reader.asn(target)
 
-                result["ASN"] = (
-                    f"AS{response.autonomous_system_number}"
-                    if response.autonomous_system_number
-                    else ""
-                )
+                result["ASN"] = f"AS{response.autonomous_system_number}" if response.autonomous_system_number else ""
 
                 result["Organization"] = (
-                    response.autonomous_system_organization
-                    if response.autonomous_system_organization
-                    else ""
+                    response.autonomous_system_organization if response.autonomous_system_organization else ""
                 )
 
                 result["network"] = str(response.network) if response.network else ""
@@ -33,7 +27,3 @@ class ASNScanner(Scan):
             pass
 
         return result
-
-    @staticmethod
-    def get_name() -> str:
-        return "ASN Scanner"

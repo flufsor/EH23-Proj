@@ -55,12 +55,3 @@ class SshScanner:
             print(f"KeyError: {e}")
 
         return check_unsafe_algorithms(algos)
-
-    @staticmethod
-    def get_name() -> str:
-        return "SSH Scanner"
-
-
-if __name__ == "__main__":
-    result = SshScanner.scan("opnsense.flufsor.xyz")
-    print(result)

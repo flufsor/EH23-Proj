@@ -14,11 +14,7 @@ class DomainScanner(Scan):
         def get_dns_records(target: str, record_type: str) -> list:
             try:
                 result = dns.resolver.resolve(target, record_type)
-                records = [
-                    str(item)
-                    for answer in result.response.answer
-                    for item in answer.items
-                ]
+                records = [str(item) for answer in result.response.answer for item in answer.items]
 
                 if record_type == "TXT":
                     records = [record.strip('"') for record in records]
@@ -32,8 +28,7 @@ class DomainScanner(Scan):
         def brute_force_and_scan_subdomains(target) -> dict:
             results = {
                 target: {
-                    record_type: get_dns_records(target, record_type)
-                    for record_type in ["A", "AAAA", "MX", "TXT"]
+                    record_type: get_dns_records(target, record_type) for record_type in ["A", "AAAA", "MX", "TXT"]
                 }
             }
 
@@ -62,10 +57,6 @@ class DomainScanner(Scan):
 
         scan_results = brute_force_and_scan_subdomains(target)
         return remove_empty_arrays(scan_results)
-
-    @staticmethod
-    def get_name() -> str:
-        return "Domain Name Scanner"
 
     @staticmethod
     @functools.lru_cache(maxsize=None)  # Cache the results of this function

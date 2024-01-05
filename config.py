@@ -1,7 +1,7 @@
 class Config:
-    domainname_list = "small.txt"  # List of domain names to use for subdomain brute forcing
-    crt_sh_ignore_expired = True  # Set to False to include expired certificates
-    portrange = "22,80,113,443,444"  # Ports to scan
+    domainname_list = "small.txt"  # File containing domain names to use for subdomain brute forcing
+    portrange = "20,21,22,23,25,53,80,110,139,443"  # Port range to scan
+    crt_sh_ignore_expired = True  # Set to True to ignore expired certificates
     geoip_city_path = "GeoLite2-City.mmdb"  # Set empty string to disable GeoIP
     geoip_asn_path = "GeoLite2-ASN.mmdb"  # Set empty string to disable GeoIP
 

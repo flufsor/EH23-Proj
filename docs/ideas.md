@@ -8,7 +8,7 @@
 - [ ] Cloud services enumeration using DNS
 - [x] Geoip lookup
 - [x] ASN lookup
-- [ ] DNSSEC checking
+- [x] DNSSEC checking
 - [ ] SSL assessment
 - [x] SSH assessment
 - [ ] Webserver Header checks

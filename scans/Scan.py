@@ -1,7 +1,9 @@
 from typing import Protocol
 
+from config import Config
+
 
 class Scan(Protocol):
     @staticmethod
-    def scan(target: str) -> dict:
+    def scan(config: Config, target: str) -> dict:
         return {}

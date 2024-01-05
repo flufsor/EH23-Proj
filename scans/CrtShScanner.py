@@ -12,9 +12,9 @@ from .Scan import Scan
 
 class CrtShScanner(Scan):
     @staticmethod
-    def scan(target) -> dict:
+    def scan(config: Config, target: str) -> dict:
         crt_sh_url = f"https://crt.sh/?q=%.{target}&output=json"
-        if Config.crt_sh_ignore_expired:
+        if config.crt_sh_ignore_expired:
             crt_sh_url += "&exclude=expired"
 
         response = requests.get(crt_sh_url)

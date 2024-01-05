@@ -7,7 +7,7 @@ from config import Config
 
 class SshScanner:
     @staticmethod
-    def scan(target: str, port: int = 22) -> dict:
+    def scan(config: Config, target: str, port: int = 22) -> dict:
         def parse_script_output(input_list: list[str]) -> dict[str, list[str]]:
             config_dict = {}
             current_key = ""
@@ -29,9 +29,9 @@ class SshScanner:
 
         def check_unsafe_algorithms(algorithms: dict[str, list[str]]):
             found_unsafe_algos = {
-                key: list(set(values) & set(Config.unsafe_ssh_algorithms[key]))
+                key: list(set(values) & set(config.unsafe_ssh_algorithms[key]))
                 for key, values in algorithms.items()
-                if key in Config.unsafe_ssh_algorithms
+                if key in config.unsafe_ssh_algorithms
             }
 
             return found_unsafe_algos

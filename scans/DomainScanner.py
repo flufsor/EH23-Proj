@@ -1,9 +1,7 @@
-import functools
 import sys
 
 import dns.rdatatype
 import dns.resolver
-import requests
 
 from config import Config
 
@@ -12,7 +10,7 @@ from .Scan import Scan
 
 class DomainScanner(Scan):
     @staticmethod
-    def scan(target: str) -> dict:
+    def scan(config: Config, target: str) -> dict:
         results = {
             target: {
                 record_type: DomainScanner.get_dns_records(target, record_type)
@@ -20,17 +18,19 @@ class DomainScanner(Scan):
             }
         }
 
-        for subdomain in DomainScanner.subdomain_name_list():
-            full_domain = f"{subdomain}.{target}"
-            try:
-                dns.resolver.resolve(full_domain, "A")
+        with open(config.domainname_list, "r") as f:
+            subdomain_name_list = f.read().splitlines()
+            for subdomain in subdomain_name_list:
+                full_domain = f"{subdomain}.{target}"
+                try:
+                    dns.resolver.resolve(full_domain, "A")
 
-                results[full_domain] = {
-                    record_type: DomainScanner.get_dns_records(full_domain, record_type)
-                    for record_type in ["A", "AAAA", "MX", "TXT"]
-                }
-            except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-                continue
+                    results[full_domain] = {
+                        record_type: DomainScanner.get_dns_records(full_domain, record_type)
+                        for record_type in ["A", "AAAA", "MX", "TXT"]
+                    }
+                except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
+                    continue
 
         return results
 
@@ -59,20 +59,3 @@ class DomainScanner(Scan):
         except dns.resolver.NXDOMAIN:
             print(f"Error: {target} does not exist")
             sys.exit(1)
-
-    @staticmethod
-    @functools.lru_cache(maxsize=None)  # Cache the results of this function
-    def subdomain_name_list():
-        domain_list = []
-        try:
-            with open(Config.domainname_list, "r") as f:
-                domain_list = f.read().splitlines()
-        except FileNotFoundError:
-            print(f"Error: File not found: {Config.domainname_list}")
-            sys.exit(1)
-
-        except Exception as e:
-            print(f"Error: {e}")
-            sys.exit(1)
-
-        return domain_list

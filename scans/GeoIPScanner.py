@@ -7,11 +7,11 @@ from .Scan import Scan
 
 class GeoIPScanner(Scan):
     @staticmethod
-    def scan(target: str) -> dict:
+    def scan(config: Config, target: str) -> dict:
         result = {}
 
         try:
-            with geoip2.database.Reader(Config.geoip_city_path) as reader:
+            with geoip2.database.Reader(config.geoip_city_path) as reader:
                 response = reader.city(target)
         except Exception as e:
             return result

@@ -11,24 +11,20 @@ from .Scan import Scan
 
 class DnsSecScanner(Scan):
     @staticmethod
-    def scan(target: str) -> dict:
-        result = {"dnssec": False}
-
+    def scan(target: str) -> bool:
         qname = dns.name.from_text(target)
         rdatatype = dns.rdatatype.DNSKEY
         query = dns.message.make_query(qname, rdatatype, want_dnssec=True)
 
         try:
-            # Use the custom resolver if provided, otherwise use the default resolver
             resolver = dns.resolver.Resolver()
 
-            # Resolve the nameservers and their addresses
             ns_response = resolver.resolve(target, dns.rdatatype.NS)
             if ns_response.rrset:
-                nsname = ns_response.rrset[0].to_text()
+                nsname = ns_response.rrset[0][0].to_text()
                 ns_response = resolver.resolve(nsname, dns.rdatatype.A)
             if ns_response.rrset:
-                nsaddr = ns_response.rrset[0].to_text()
+                nsaddr = ns_response.rrset[0][0].to_text()
 
                 # Query the nameserver for DNSKEY records and perform DNSSEC validation
                 response = dns.query.udp(query, nsaddr)
@@ -38,9 +34,9 @@ class DnsSecScanner(Scan):
                     if len(answer) == 2:
                         # Validate DNSSEC signatures
                         dns.dnssec.validate(answer[0], answer[1], {qname: answer[0]})
-                        result["dnssec"] = True
+                        return True
 
-        except Exception as e:
-            return result
+        except:
+            return False
 
-        return result
+        return False

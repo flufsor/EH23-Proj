@@ -13,11 +13,10 @@ class GeoIPScanner(Scan):
         try:
             with geoip2.database.Reader(Config.geoip_city_path) as reader:
                 response = reader.city(target)
-
-                result["country"] = response.country.name if response.country.name else ""
-                result["city"] = response.city.name if response.city.name else ""
-
         except Exception as e:
             return result
+
+        result["country"] = response.country.name if response.country.name else ""
+        result["city"] = response.city.name if response.city.name else ""
 
         return result

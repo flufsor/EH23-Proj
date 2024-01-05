@@ -1,6 +1,7 @@
 import functools
 import sys
 
+import dns.rdatatype
 import dns.resolver
 
 from config import Config
@@ -14,12 +15,21 @@ class DomainScanner(Scan):
         def get_dns_records(target: str, record_type: str) -> list:
             try:
                 result = dns.resolver.resolve(target, record_type)
-                records = [str(item) for answer in result.response.answer for item in answer.items]
+                records = set()  # Use a set to store unique IP addresses
+
+                for answer in result.response.answer:
+                    for item in answer.items:
+                        if item.rdtype == dns.rdatatype.A or item.rdtype == dns.rdatatype.AAAA:
+                            records.add(str(item))
+                        elif item.rdtype == dns.rdatatype.CNAME:
+                            cname_target = str(item.target)
+                            cname_records = get_dns_records(cname_target, record_type)
+                            records.update(cname_records)
 
                 if record_type == "TXT":
                     records = [record.strip('"') for record in records]
 
-                return records
+                return list(records)
 
             except dns.resolver.NoAnswer:
                 return []
@@ -38,6 +48,7 @@ class DomainScanner(Scan):
                 full_domain = f"{subdomain}.{target}"
                 try:
                     dns.resolver.resolve(full_domain, "A")
+                    print(f"Found subdomain: {full_domain}")
 
                     results[full_domain] = {
                         record_type: get_dns_records(full_domain, record_type)

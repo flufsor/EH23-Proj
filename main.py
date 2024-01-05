@@ -46,6 +46,7 @@ def get_ips_from_domain_records(domain_records: Dict[str, Dict[str, str]]) -> li
         for record_type, ip_list in records.items():
             if record_type in {"A", "AAAA"}:
                 unique_ips.update(ip_list)
+
     return list(unique_ips)
 
 
@@ -121,6 +122,11 @@ if __name__ == "__main__":
         portscan_results = PortScanner.scan(target)
         for scanresult_key, scanresult_value in portscan_results.items():
             targets[target][scanresult_key] = scanresult_value
+        
+        if "ports" not in targets[target]:
+            print(Padding("Open Ports: [green]None[/green]", (0, 4)))
+            continue
+
         print(Padding(f"Open Ports:", (0, 4)))
         for port in targets[target]["ports"]:
             print(Padding(f"- [bold yellow]{port}, {targets[target]["ports"][port]['product']} {targets[target]["ports"][port]['version']}[/bold yellow]", (0, 8)))

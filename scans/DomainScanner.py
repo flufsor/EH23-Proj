@@ -40,17 +40,19 @@ class DomainScanner(Scan):
             result = dns.resolver.resolve(target, record_type)
             records = set()
 
-            for answer in result.response.answer:
-                for item in answer.items:
-                    if item.rdtype == dns.rdatatype.A or item.rdtype == dns.rdatatype.AAAA:
-                        records.add(str(item))
-                    elif item.rdtype == dns.rdatatype.CNAME:
-                        cname_target = str(item.target)
-                        cname_records = DomainScanner.get_dns_records(cname_target, record_type)
-                        records.update(cname_records)
-
-            if record_type == "TXT":
-                records = [record.strip('"') for record in records]
+            for item in result:
+                if item.rdtype == dns.rdatatype.A or item.rdtype == dns.rdatatype.AAAA:
+                    records.add(str(item))
+                elif item.rdtype == dns.rdatatype.CNAME:
+                    cname_target = str(item.target)
+                    cname_records = DomainScanner.get_dns_records(cname_target, record_type)
+                    records.update(cname_records)
+                elif item.rdtype == dns.rdatatype.MX:
+                    mx_target = str(item.exchange)
+                    mx_records = DomainScanner.get_dns_records(mx_target, record_type)
+                    records.update(mx_records)
+                elif item.rdtype == dns.rdatatype.TXT:
+                    records.add(item.strings[0].decode('utf-8'))
 
             return list(records)
 

@@ -1,0 +1,172 @@
+{
+  "target": "ba.be",
+  "start_time": "2024-01-06 01:59:45",
+  "end_time": "2024-01-06 02:00:42",
+  "domain_info": {
+    "dnssec": false,
+    "subdomains": {
+      "ba.be": {
+        "A": [
+          "135.181.198.70"
+        ],
+        "TXT": [
+          "MS=FF79411658AAE58F4751F21494BCCA349379FCE4",
+          "v=spf1  include:_spf.google.com include:servers.mcsv.net mx ip4:194.0.234.0/24 ip4:116.203.18.22 ip4:91.183.52.232 ip4:159.69.80.253 ~all"
+        ]
+      },
+      "www.ba.be": {
+        "A": [
+          "135.181.198.70"
+        ]
+      },
+      "k.ba.be": {
+        "A": [
+          "162.55.183.229"
+        ]
+      },
+      "qr.ba.be": {
+        "A": [
+          "116.203.18.22"
+        ]
+      },
+      "fsma.colo.ba.be": {
+        "A": [
+          "65.108.17.178"
+        ]
+      }
+    }
+  },
+  "ips": {
+    "162.55.183.229": {
+      "rdns": "ouderraadwakkerzeel.be",
+      "geoip": {
+        "country": "Germany",
+        "city": ""
+      },
+      "network_info": {
+        "AS": "AS24940",
+        "organization": "Hetzner Online GmbH",
+        "network": "162.55.0.0/16"
+      },
+      "ports": {
+        "22": {
+          "product": "OpenSSH",
+          "version": "7.4"
+        },
+        "80": {
+          "product": "nginx",
+          "version": "unknown"
+        },
+        "443": {
+          "product": "nginx",
+          "version": "unknown"
+        }
+      },
+      "ssh": {
+        "22": {
+          "weak_ciphers": {
+            "kex_algorithms": [
+              "diffie-hellman-group14-sha1",
+              "diffie-hellman-group1-sha1",
+              "diffie-hellman-group-exchange-sha1"
+            ],
+            "server_host_key_algorithms": [
+              "ssh-rsa"
+            ],
+            "encryption_algorithms": [
+              "cast128-cbc",
+              "aes128-cbc",
+              "blowfish-cbc",
+              "aes192-cbc",
+              "aes256-cbc",
+              "3des-cbc"
+            ],
+            "mac_algorithms": [
+              "hmac-sha1"
+            ]
+          }
+        }
+      }
+    },
+    "116.203.18.22": {
+      "rdns": "static.22.18.203.116.clients.your-server.de",
+      "geoip": {
+        "country": "Germany",
+        "city": ""
+      },
+      "network_info": {
+        "AS": "AS24940",
+        "organization": "Hetzner Online GmbH",
+        "network": "116.202.0.0/15"
+      },
+      "ports": {
+        "80": {
+          "product": "Apache httpd",
+          "version": "2.4.57"
+        },
+        "443": {
+          "product": "Apache httpd",
+          "version": "2.4.57"
+        }
+      }
+    },
+    "135.181.198.70": {
+      "rdns": "static.70.198.181.135.clients.your-server.de",
+      "geoip": {
+        "country": "Finland",
+        "city": "Helsinki"
+      },
+      "network_info": {
+        "AS": "AS24940",
+        "organization": "Hetzner Online GmbH",
+        "network": "135.181.0.0/16"
+      },
+      "ports": {
+        "22": {
+          "product": "OpenSSH",
+          "version": "8.0"
+        },
+        "80": {
+          "product": "nginx",
+          "version": "1.18.0"
+        },
+        "443": {
+          "product": "nginx",
+          "version": "1.18.0"
+        }
+      },
+      "ssh": {
+        "22": {
+          "weak_ciphers": {
+            "kex_algorithms": [
+              "diffie-hellman-group14-sha1",
+              "diffie-hellman-group-exchange-sha1"
+            ],
+            "server_host_key_algorithms": [
+              "ssh-rsa"
+            ],
+            "encryption_algorithms": [
+              "aes128-cbc",
+              "aes256-cbc"
+            ],
+            "mac_algorithms": [
+              "hmac-sha1"
+            ]
+          }
+        }
+      }
+    },
+    "65.108.17.178": {
+      "rdns": "static.178.17.108.65.clients.your-server.de",
+      "geoip": {
+        "country": "Finland",
+        "city": "Helsinki"
+      },
+      "network_info": {
+        "AS": "AS24940",
+        "organization": "Hetzner Online GmbH",
+        "network": "65.108.0.0/15"
+      }
+    }
+  }
+}
